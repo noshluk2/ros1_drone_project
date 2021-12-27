@@ -12,7 +12,6 @@ class TurtleBot:
         rospy.init_node('turtlebot_controller', anonymous=True)
         self.velocity_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.pose_subscriber = rospy.Subscriber("/gazebo/model_states", ModelStates, self.pose_callback)
-        self.radian_to_degree = 57.29
         self.pose_msg = ModelStates()
         self.robot_pos_x =0.0;self.robot_pos_y=0.0;self.robot_orientation_z=0.0;
         self.angle_to_goal=0.0;self.distance_to_goal=0.0;
@@ -23,8 +22,12 @@ class TurtleBot:
         self.robot_pos_x = round(self.pose_msg.pose[1].position.x, 4)
         self.robot_pos_y = round(self.pose_msg.pose[1].position.y, 4)
         self.robot_orientation_z = round(self.pose_msg.pose[1].orientation.z, 4)
+        orientation_list = [self.pose_msg.pose[1].orientation.x, self.pose_msg.pose[1].orientation.y, 
+                            self.pose_msg.pose[1].orientation.z, self.pose_msg.pose[1].orientation.w]
+        (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
         # print(self.robot_pos_x," / ",self.robot_pos_y," / ",self.robot_orientation_z ,"\n")
-        
+        # print(round(roll,3)," / ",round(pitch,3)," / ",round(yaw,3) ,"\n")
+
     def euclidean_distance(self, goal_pose):
         self.distance_to_goal=sqrt(pow((goal_pose.x - self.robot_pos_x), 2) +pow((goal_pose.y - self.robot_pos_y), 2))
         return self.distance_to_goal
@@ -44,7 +47,6 @@ class TurtleBot:
             self.robot_orientation_z = self.robot_orientation_z * self.radian_to_degree
             angle_to_goal=(atan2(goal_pose.y - self.robot_pos_y ,goal_pose.x - self.robot_pos_y) ) *self.radian_to_degree
             heading_to_goal=angle_to_goal - self.robot_orientation_z
-            print(euler_from_quaternion(self.robot_orientation_z))
             # print("AG : " , round(heading_to_goal,4), "RA : ",round(self.robot_orientation_z,4),"DG : ",round(self.distance_to_goal,4))
             # vel_msg.linear.x = self.linear_vel(goal_pose)
             # vel_msg.angular.z = self.angular_vel(goal_pose)
